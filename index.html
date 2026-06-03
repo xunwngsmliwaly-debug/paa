@@ -1,0 +1,362 @@
+```html
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>รวมปกงาน</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Segoe UI',sans-serif;
+    background:#f5f7fb;
+    color:#333;
+}
+
+header{
+    background:linear-gradient(135deg,#007bff,#0056b3);
+    color:white;
+    text-align:center;
+    padding:60px 20px;
+}
+
+header h1{
+    font-size:2.5rem;
+    margin-bottom:10px;
+}
+
+header p{
+    opacity:.9;
+}
+
+.search-box{
+    max-width:500px;
+    margin:25px auto 0;
+}
+
+.search-box input{
+    width:100%;
+    padding:14px 20px;
+    border:none;
+    border-radius:30px;
+    outline:none;
+    font-size:16px;
+}
+
+.menu-container{
+    text-align:center;
+    margin:30px 10px;
+}
+
+.menu-btn{
+    background:white;
+    border:2px solid #007bff;
+    color:#007bff;
+    padding:10px 18px;
+    margin:5px;
+    border-radius:30px;
+    cursor:pointer;
+    font-weight:600;
+    transition:.3s;
+}
+
+.menu-btn:hover,
+.menu-btn.active{
+    background:#007bff;
+    color:white;
+}
+
+.portfolio-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:25px;
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+.portfolio-item{
+    background:white;
+    border-radius:15px;
+    overflow:hidden;
+    text-decoration:none;
+    color:#333;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.portfolio-item:hover{
+    transform:translateY(-8px);
+    box-shadow:0 12px 25px rgba(0,0,0,.15);
+}
+
+.portfolio-item img{
+    width:100%;
+    height:220px;
+    object-fit:cover;
+}
+
+.content{
+    padding:15px;
+}
+
+.content h3{
+    margin-bottom:10px;
+}
+
+.category{
+    color:#777;
+    font-size:14px;
+}
+
+.price{
+    margin-top:10px;
+    color:#007bff;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.loading{
+    text-align:center;
+    padding:50px;
+}
+
+.line-section{
+    text-align:center;
+    margin:40px 0;
+}
+
+.line-btn{
+    display:inline-block;
+    background:#06C755;
+    color:white;
+    text-decoration:none;
+    padding:15px 30px;
+    border-radius:40px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+footer{
+    text-align:center;
+    padding:30px;
+    color:#777;
+}
+</style>
+
+</head>
+<body>
+
+<header>
+    <h1>รวมผลงาน</h1>
+    <p>Portfolio • PA • Best Practice • PowerPoint • ปกราชการ</p>
+
+    <div class="search-box">
+        <input
+            type="text"
+            id="searchBox"
+            placeholder="ค้นหาผลงาน..."
+            onkeyup="searchWork()"
+        >
+    </div>
+</header>
+
+<div class="menu-container">
+
+    <button class="menu-btn active"
+            onclick="filterWork('all',this)">
+        ทั้งหมด
+    </button>
+
+    <button class="menu-btn"
+            onclick="filterWork('portfolio',this)">
+        ปกพอร์ต
+    </button>
+
+    <button class="menu-btn"
+            onclick="filterWork('government',this)">
+        ปกราชการ
+    </button>
+
+    <button class="menu-btn"
+            onclick="filterWork('presentation',this)">
+        สไลด์นำเสนอ
+    </button>
+
+    <button class="menu-btn"
+            onclick="filterWork('pa',this)">
+        PA
+    </button>
+
+    <button class="menu-btn"
+            onclick="filterWork('bestpractice',this)">
+        Best Practice
+    </button>
+
+    <button class="menu-btn"
+            onclick="filterWork('certificate',this)">
+        เกียรติบัตร
+    </button>
+
+    <button class="menu-btn"
+            onclick="filterWork('banner',this)">
+        Banner
+    </button>
+
+    <button class="menu-btn"
+            onclick="filterWork('ebook',this)">
+        E-Book
+    </button>
+
+    <button class="menu-btn"
+            onclick="filterWork('resume',this)">
+        Resume
+    </button>
+
+</div>
+
+<div class="portfolio-grid" id="portfolio-gallery">
+    <div class="loading">กำลังโหลดผลงาน...</div>
+</div>
+
+<div class="line-section">
+    <a
+        href="https://line.me/ti/p/XXXXXXXX"
+        target="_blank"
+        class="line-btn">
+        📱 ติดต่อผ่าน LINE
+    </a>
+</div>
+
+<footer>
+    © 2026 Portfolio Design Studio
+</footer>
+
+<script>
+
+// เปลี่ยนเป็น API SheetDB ของคุณ
+const API_URL = "https://sheetdb.io/api/v1/wh8e62awvjc3k";
+
+let allOutputs = [];
+
+async function loadPortfolio(){
+
+    try{
+
+        const response = await fetch(API_URL);
+        allOutputs = await response.json();
+
+        displayItems(allOutputs);
+
+    }catch(error){
+
+        document.getElementById("portfolio-gallery").innerHTML =
+        "<div class='loading'>เกิดข้อผิดพลาดในการโหลดข้อมูล</div>";
+
+        console.error(error);
+    }
+}
+
+function displayItems(items){
+
+    const gallery =
+    document.getElementById("portfolio-gallery");
+
+    gallery.innerHTML = "";
+
+    if(items.length === 0){
+
+        gallery.innerHTML =
+        "<div class='loading'>ไม่พบผลงาน</div>";
+
+        return;
+    }
+
+    items.forEach(item => {
+
+        const html = `
+        <a href="${item.image}"
+           target="_blank"
+           class="portfolio-item">
+
+            <img src="${item.image}"
+                 alt="${item.title}"
+                 loading="lazy">
+
+            <div class="content">
+
+                <h3>${item.title || '-'}</h3>
+
+                <div class="category">
+                    ${item.category || '-'}
+                </div>
+
+                <div class="price">
+                    ${item.price || '-'} บาท
+                </div>
+
+            </div>
+
+        </a>
+        `;
+
+        gallery.innerHTML += html;
+    });
+}
+
+function filterWork(category,button){
+
+    document.querySelectorAll(".menu-btn")
+    .forEach(btn =>
+        btn.classList.remove("active")
+    );
+
+    button.classList.add("active");
+
+    if(category === "all"){
+
+        displayItems(allOutputs);
+
+    }else{
+
+        const filtered =
+        allOutputs.filter(item =>
+            item.category &&
+            item.category.toLowerCase() ===
+            category.toLowerCase()
+        );
+
+        displayItems(filtered);
+    }
+}
+
+function searchWork(){
+
+    const keyword =
+    document.getElementById("searchBox")
+    .value
+    .toLowerCase();
+
+    const filtered =
+    allOutputs.filter(item =>
+        item.title &&
+        item.title.toLowerCase().includes(keyword)
+    );
+
+    displayItems(filtered);
+}
+
+loadPortfolio();
+
+</script>
+
+</body>
+</html>
+```
